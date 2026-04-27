@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#5b5cf6">
-<title>Capital Planner</title>
+<title>Yield Vector</title>
 <!-- iOS PWA: lets the page launch full-screen when added to Home Screen -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Capital Planner">
+<meta name="apple-mobile-web-app-title" content="Yield Vector">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
 <!-- Icon + manifest hrefs are set at runtime via canvas-generated PNG -->
@@ -141,14 +141,17 @@ a { color: inherit; text-decoration: none; }
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  background:
+    linear-gradient(135deg, transparent 50%, #0a0a3a 50%),
+    linear-gradient(135deg, #c4b5fd 0%, #6366f1 100%);
   display: grid;
   place-items: center;
   color: white;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11px;
   letter-spacing: -0.02em;
   box-shadow: 0 4px 12px rgba(91, 92, 246, 0.35);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
 
 .primary-nav {
@@ -180,6 +183,49 @@ a { color: inherit; text-decoration: none; }
   gap: var(--space-2);
   align-items: center;
 }
+
+/* Overview "side panel" layout: actions wide on left, snapshot narrow on
+   right. Items align to top so they don't stretch awkwardly. */
+.overview-side {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .overview-side { grid-template-columns: 1fr; }
+}
+
+.snapshot-card {
+  padding: var(--space-5);
+  background: var(--card-soft);
+  border: 1px solid var(--border-soft);
+  box-shadow: none;
+}
+.snapshot-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
+}
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.snap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+}
+.snap-l { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
+.snap-v { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); font-feature-settings: 'tnum' 1; }
 
 /* Sync indicator pill in the header — visible on every screen size */
 .sync-indicator {
@@ -430,6 +476,21 @@ a { color: inherit; text-decoration: none; }
   -webkit-font-smoothing: antialiased;
 }
 
+/* On mobile the chart gets cramped — let it overflow horizontally with
+   a min-width so users can scroll across instead of squinting. */
+@media (max-width: 720px) {
+  .chart-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin-left: calc(-1 * var(--space-4));
+    margin-right: calc(-1 * var(--space-4));
+    padding: 0 var(--space-4);
+    scrollbar-width: thin;
+  }
+  .chart-svg { min-width: 720px; }
+}
+
 .chart-tooltip {
   position: absolute;
   pointer-events: none;
@@ -502,7 +563,7 @@ a { color: inherit; text-decoration: none; }
 
 .action-row {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
@@ -511,15 +572,48 @@ a { color: inherit; text-decoration: none; }
 }
 .action-row:hover { background: var(--bg); }
 
+/* Mobile: tighter columns, tag wraps under the title so nothing collides */
+@media (max-width: 480px) {
+  .action-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+  .action-row .action-tag {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    margin-top: 2px;
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+}
+
+/* iOS calendar-icon-style date block: bright red month, large dark day */
 .action-day {
   text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.1;
+  line-height: 1;
+  padding: 2px 0;
 }
-.action-day .month { display: block; font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
-.action-day .day { font-size: 20px; font-weight: 600; }
+.action-day .month {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ff3b30;  /* iOS systemRed */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  margin-bottom: 1px;
+}
+.action-day .day {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1c1c1e;  /* iOS systemLabel */
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum' 1;
+}
 
 .action-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .action-title { font-weight: 500; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -987,10 +1081,14 @@ table.data-table {
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-card);
-  border: 1.5px solid transparent;
-  transition: border-color 0.15s;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.12s, transform 0.05s, box-shadow 0.12s;
 }
-.combo-card.recommended { border-color: var(--accent); }
+.combo-card:hover { border-color: var(--accent-mid); }
+.combo-card:active { transform: scale(0.997); }
+.combo-card.selected { border-color: var(--accent); box-shadow: var(--shadow-card-hover), 0 0 0 4px rgba(91, 92, 246, 0.12); }
+.recommended-tag { color: var(--accent); font-weight: 700; }
 
 .combo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3); gap: var(--space-3); }
 .combo-rank { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -1360,7 +1458,7 @@ const Sync = {
     App.state._lastModified = Date.now();
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(App.state)); } catch {}
     const body = JSON.stringify({
-      description: 'Capital Planner sync',
+      description: 'Yield Vector sync',
       public: false,
       files: { [SYNC_FILENAME]: { content: JSON.stringify(App.state, null, 2) } }
     });
@@ -1442,32 +1540,87 @@ function updateSyncIndicator() {
    PWA: runtime-generated icon + manifest, no external assets
    ============================================================ */
 function setupPwa() {
-  // Draw a 180x180 rounded "CP" logo PNG via canvas
+  // Yield Vector home-screen icon: two-tier diagonal split (Wealthfront-
+  // inspired) with a subtle white upward-vector mark.
   const c = document.createElement('canvas');
   c.width = 180; c.height = 180;
   const ctx = c.getContext('2d');
-  const grad = ctx.createLinearGradient(0, 0, 180, 180);
-  grad.addColorStop(0, '#6366f1');
-  grad.addColorStop(1, '#4338ca');
-  const r = 36;
-  ctx.fillStyle = grad;
+  const W = 180, R = 38;
+
+  // Round corners via clip
+  ctx.save();
   ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(180 - r, 0);
-  ctx.quadraticCurveTo(180, 0, 180, r);
-  ctx.lineTo(180, 180 - r);
-  ctx.quadraticCurveTo(180, 180, 180 - r, 180);
-  ctx.lineTo(r, 180);
-  ctx.quadraticCurveTo(0, 180, 0, 180 - r);
-  ctx.lineTo(0, r);
-  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.moveTo(R, 0);
+  ctx.lineTo(W - R, 0);
+  ctx.quadraticCurveTo(W, 0, W, R);
+  ctx.lineTo(W, W - R);
+  ctx.quadraticCurveTo(W, W, W - R, W);
+  ctx.lineTo(R, W);
+  ctx.quadraticCurveTo(0, W, 0, W - R);
+  ctx.lineTo(0, R);
+  ctx.quadraticCurveTo(0, 0, R, 0);
+  ctx.closePath();
+  ctx.clip();
+
+  // Lower / right half: deep navy-indigo gradient
+  const deep = ctx.createLinearGradient(W, W, 0, 0);
+  deep.addColorStop(0, '#0a0a3a');
+  deep.addColorStop(1, '#312e81');
+  ctx.fillStyle = deep;
+  ctx.fillRect(0, 0, W, W);
+
+  // Upper / left half: brighter violet → indigo, cut diagonally
+  const bright = ctx.createLinearGradient(0, 0, W, W);
+  bright.addColorStop(0, '#c4b5fd');
+  bright.addColorStop(0.55, '#8b5cf6');
+  bright.addColorStop(1, '#6366f1');
+  ctx.fillStyle = bright;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(W, 0);
+  ctx.lineTo(W * 0.15, W);
+  ctx.lineTo(0, W);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '700 80px -apple-system, "SF Pro Display", system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('CP', 90, 102);
+
+  // Soft highlight on the diagonal seam for depth
+  const seam = ctx.createLinearGradient(W * 0.6, 0, 0, W * 0.95);
+  seam.addColorStop(0, 'rgba(255,255,255,0)');
+  seam.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+  seam.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = seam;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.6, 0);
+  ctx.lineTo(W * 0.7, 0);
+  ctx.lineTo(0, W * 0.95);
+  ctx.lineTo(0, W * 0.85);
+  ctx.closePath();
+  ctx.fill();
+
+  // White vector mark — clean upward arrow, slight diagonal
+  ctx.shadowColor = 'rgba(0,0,0,0.25)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 2;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 9;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // Shaft
+  ctx.beginPath();
+  ctx.moveTo(48, 132);
+  ctx.lineTo(132, 48);
+  ctx.stroke();
+  // Arrowhead — two short strokes from the tip
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.moveTo(132, 48);
+  ctx.lineTo(132, 84);
+  ctx.moveTo(132, 48);
+  ctx.lineTo(96, 48);
+  ctx.stroke();
+
+  ctx.restore();
+
   const dataUrl = c.toDataURL('image/png');
   const apple = document.getElementById('apple-icon');
   const fav = document.getElementById('favicon');
@@ -1475,8 +1628,8 @@ function setupPwa() {
   if (fav) fav.href = dataUrl;
   // Web App Manifest (Android/Chrome)
   const manifest = {
-    name: 'Capital Planner',
-    short_name: 'Planner',
+    name: 'Yield Vector',
+    short_name: 'Yield Vector',
     display: 'standalone',
     start_url: location.pathname,
     scope: location.pathname,
@@ -2128,7 +2281,23 @@ function runOptimizer(state) {
    ============================================================ */
 function render() {
   const root = document.getElementById('app');
+  // Preserve focus + caret on inputs across full re-renders. Without this,
+  // typing/backspacing in the search box loses focus on every keystroke
+  // because innerHTML destroys the input element.
+  const focused = document.activeElement;
+  const focusedId = focused && focused.id ? focused.id : null;
+  const selStart = focused && focused.selectionStart != null ? focused.selectionStart : null;
+  const selEnd = focused && focused.selectionEnd != null ? focused.selectionEnd : null;
+
   root.innerHTML = renderShell();
+
+  if (focusedId) {
+    const el = document.getElementById(focusedId);
+    if (el) {
+      el.focus({ preventScroll: true });
+      try { if (selStart != null && el.setSelectionRange) el.setSelectionRange(selStart, selEnd); } catch {}
+    }
+  }
   bindViewEvents();
   // Re-render charts that need actual DOM measurements
   renderChartsAfterMount();
@@ -2156,8 +2325,8 @@ function renderHeader() {
   return `
     <header class="app-header">
       <div class="brand">
-        <div class="brand-mark">CP</div>
-        <div class="brand-name">Capital Planner</div>
+        <div class="brand-mark">YV</div>
+        <div class="brand-name">Yield Vector</div>
       </div>
       <nav class="primary-nav">
         ${views.map(([k, l]) => `<button class="nav-btn ${App.view === k ? 'active' : ''}" data-view="${k}">${l}</button>`).join('')}
@@ -2241,7 +2410,7 @@ function renderOverview() {
         <div class="hero-meta">
           <span>Available capital today</span>
           ${lowestPill}
-          ${lowest && summary.lowestIdx > 0 ? `<span style="color:var(--text-tertiary);">Lowest <strong style="color:var(--text);">${formatCompactCurrency(heroLowest)}</strong> on ${formatDateMedium(lowest.date)}</span>` : ''}
+          ${lowest && summary.lowestIdx > 0 ? `<span style="color:var(--text-tertiary);">Lowest <strong style="color:${heroLowest < 0 ? 'var(--danger)' : 'var(--text)'};">${formatCompactCurrency(heroLowest)}</strong> on ${formatDateMedium(lowest.date)}</span>` : ''}
         </div>
       </div>
       <div class="chart-wrap" id="hero-chart-wrap">
@@ -2253,18 +2422,17 @@ function renderOverview() {
         <span class="chart-legend-item"><span class="legend-line dashed" style="color:var(--warning);"></span> Buffer (${formatCompactCurrency(App.state.settings.minimumCashBuffer)})</span>
         <span class="chart-legend-item"><span class="legend-swatch" style="background:#5b5cf6;"></span> Funding date</span>
         <span class="chart-legend-item"><span class="legend-swatch" style="background:#10b981;"></span> Withdrawal eligible</span>
-        <span class="chart-legend-item"><span class="legend-swatch" style="background:#f59e0b;"></span> Offer deadline</span>
       </div>
     </section>
 
     <div class="grid grid-cols-4" style="margin-bottom: var(--space-6);">
-      ${statCard('Liquid capital', formatCurrency(liquidCapital), 'Set in Settings')}
+      ${statCard('Liquid capital', formatCurrency(liquidCapital), '')}
       ${statCard('Tied up today', formatCurrency(tiedUpToday), `${(today ? Math.round((today.confirmedTiedUp / Math.max(1, today.totalTiedUp)) * 100) : 0)}% confirmed`)}
       ${statCard('Selected bonuses', formatCurrency(expectedBonusTotal), `${includedOffers.length} offer${includedOffers.length === 1 ? '' : 's'} included`, 'success')}
       ${statCard('Lowest projected', formatCompactCurrency(heroLowest), lowest ? formatDateMedium(lowest.date) : '—', summary.shortfallDays > 0 ? 'danger' : (summary.belowBufferDays > 0 ? 'warn' : ''))}
     </div>
 
-    <div class="grid grid-cols-2 mobile-stack" style="gap: var(--space-4);">
+    <div class="overview-side">
       <section class="card">
         <div class="card-header">
           <h2>Upcoming actions</h2>
@@ -2275,38 +2443,17 @@ function renderOverview() {
           : `<div class="action-list">${upcomingActions.map(renderActionRow).join('')}</div>`}
       </section>
 
-      <section class="card">
-        <div class="card-header">
-          <h2>Quick numbers</h2>
+      <aside class="card snapshot-card">
+        <div class="snapshot-title">At a glance</div>
+        <div class="snapshot-grid">
+          <div class="snap"><span class="snap-l">Active offers</span><span class="snap-v">${App.state.offers.filter(o => o.status !== 'completed' && o.status !== 'skipped').length}</span></div>
+          <div class="snap"><span class="snap-l">Confirmed</span><span class="snap-v">${App.state.commitments.filter(c => c.status === 'confirmed' && c.includeInProjection).length + App.state.offers.filter(o => CONFIRMED_OFFER_STATUSES.has(o.status)).length}</span></div>
+          <div class="snap"><span class="snap-l">Events</span><span class="snap-v">${App.state.events.filter(e => e.includeInProjection).length}</span></div>
+          <div class="snap"><span class="snap-l">Horizon</span><span class="snap-v">${effectiveHorizonDays(App.state)}d</span></div>
+          <div class="snap"><span class="snap-l">Buffer</span><span class="snap-v">${formatCompactCurrency(App.state.settings.minimumCashBuffer)}</span></div>
+          <div class="snap"><span class="snap-l">Bonus pool</span><span class="snap-v" style="color:var(--success);">${formatCompactCurrency(expectedBonusTotal)}</span></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:var(--space-3);">
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:var(--text-secondary);">Active offers</span>
-            <strong>${App.state.offers.filter(o => o.status !== 'completed' && o.status !== 'skipped').length}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:var(--text-secondary);">Confirmed commitments</span>
-            <strong>${App.state.commitments.filter(c => c.status === 'confirmed' && c.includeInProjection).length}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:var(--text-secondary);">Capital events</span>
-            <strong>${App.state.events.filter(e => e.includeInProjection).length}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:var(--text-secondary);">Projection horizon</span>
-            <strong>${effectiveHorizonDays(App.state)} days</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:var(--text-secondary);">Cash buffer</span>
-            <strong>${formatCurrency(App.state.settings.minimumCashBuffer)}</strong>
-          </div>
-          <div class="divider"></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:var(--text-secondary);">Total expected bonus<br><span style="font-size:11px;color:var(--text-tertiary);">From included offers</span></span>
-            <strong style="font-size:18px;color:var(--success);">${formatCurrency(expectedBonusTotal)}</strong>
-          </div>
-        </div>
-      </section>
+      </aside>
     </div>
   `;
 }
@@ -2336,7 +2483,7 @@ function computeUpcomingActions(state, limit = 12) {
     if (dd) {
       const d = parseDate(dd);
       if (d && d >= TODAY && d <= horizonEnd && (o.status === 'applied' || o.status === 'selected' || o.status === 'prospect')) {
-        items.push({ date: d, kind: 'Deposit deadline', name: `${o.bankName}${o.offerName ? ' — ' + o.offerName : ''}`, sub: `Fund ${formatCompactCurrency(o.requiredFundingAmount)}`, tag: '' });
+        items.push({ date: d, kind: 'Deposit deadline', name: `${o.bankName}${o.offerName ? ' — ' + o.offerName : ''}`, sub: `Fund ${formatCompactCurrency(o.requiredFundingAmount)}`, tag: 'warn' });
       }
     }
     const we = withdrawalEligibleDate(o);
@@ -2476,29 +2623,41 @@ function renderOptimizerResults(result) {
       </div>
     `;
   }
+  // Compute which combo (if any) matches the user's current includeInScenario state.
+  const currentMask = currentlyAppliedComboMask(result.candidates);
   return `
     <section class="card" style="margin-bottom:var(--space-5);">
       <div class="card-header">
         <h2>Top feasible combinations</h2>
-        <span style="font-size:12px;color:var(--text-tertiary);">Evaluated ${result.evaluated.toLocaleString()} subsets · ${result.infeasibleCount} infeasible · ranked by total bonus</span>
+        <span style="font-size:12px;color:var(--text-tertiary);">Evaluated ${result.evaluated.toLocaleString()} subsets · ${result.infeasibleCount} infeasible · click a combo to apply it</span>
       </div>
       <div class="combo-grid">
-        ${result.results.map((r, i) => renderComboCard(r, i, result.candidates)).join('')}
+        ${result.results.map((r, i) => renderComboCard(r, i, result.candidates, currentMask)).join('')}
       </div>
+      <p style="margin-top:var(--space-3);font-size:12px;color:var(--text-tertiary);">Ranking: highest total bonus → highest blended APY → highest lowest-available cash. <strong>Low cash</strong> is the lowest projected value of your available liquid capital across the projection horizon (i.e. how thin you'd run).</p>
     </section>
   `;
 }
 
-function renderComboCard(r, rank, candidates) {
+function currentlyAppliedComboMask(candidates) {
+  let mask = 0;
+  for (let i = 0; i < candidates.length; i++) {
+    const o = App.state.offers.find(x => x.id === candidates[i].id);
+    if (o && o.includeInScenario) mask |= (1 << i);
+  }
+  return mask;
+}
+
+function renderComboCard(r, rank, candidates, currentMask) {
   const offers = r.includedIds.map(id => candidates.find(o => o.id === id)).filter(Boolean);
+  const isSelected = r.mask === currentMask;
   return `
-    <div class="combo-card ${rank === 0 ? 'recommended' : ''}">
+    <div class="combo-card ${isSelected ? 'selected' : ''}" data-action="apply-combo" data-mask="${r.mask}" role="button" tabindex="0">
       <div class="combo-header">
         <div>
-          <div class="combo-rank">#${rank + 1}${rank === 0 ? ' · Recommended' : ''}</div>
+          <div class="combo-rank">#${rank + 1}${rank === 0 ? ' · <span class="recommended-tag">Recommended</span>' : ''}${isSelected ? ' · <span style="color:var(--accent);">Applied</span>' : ''}</div>
           <div class="combo-bonus">${formatCurrency(r.totalBonus)}</div>
         </div>
-        <button class="btn btn-secondary btn-sm" data-action="apply-combo" data-mask="${r.mask}">Apply</button>
       </div>
       <div class="combo-meta">
         <span><strong>${formatCompactCurrency(r.totalRequired)}</strong> capital</span>
@@ -2759,7 +2918,7 @@ function renderOffers() {
     </div>
 
     <div class="toolbar">
-      <input type="search" class="input" placeholder="Search offers..." style="max-width:280px;" data-action="offers-search" value="${escapeAttr(App.filters.offersSearch)}" />
+      <input id="offers-search-input" type="search" class="input" placeholder="Search offers..." style="max-width:280px;" data-action="offers-search" value="${escapeAttr(App.filters.offersSearch)}" autocomplete="off" />
       <select class="select" style="max-width:200px;" data-action="offers-status">
         <option value="all" ${App.filters.offersStatus === 'all' ? 'selected' : ''}>All statuses</option>
         ${STATUSES.map(s => `<option value="${s}" ${App.filters.offersStatus === s ? 'selected' : ''}>${STATUS_LABELS[s]}</option>`).join('')}
@@ -3226,10 +3385,13 @@ function renderHeroChart(svg) {
     const tooCloseToToday = isFirstTick && dayOffset < 12;
     if (dayOffset > 0 && !tooCloseToToday) {
       // Show year too if it crosses into a new year
-      const showYear = cursor.getFullYear() !== start.getFullYear();
+      // Only show the year on January (when the year actually changes), and
+      // use the FULL year ("Jan 2027") to avoid confusion with day-of-month
+      // labels like "Jun 25" elsewhere on the chart.
+      const showYear = cursor.getMonth() === 0 && cursor.getFullYear() !== start.getFullYear();
       xTicks.push({
         i: dayOffset,
-        label: cursor.toLocaleDateString('en-US', showYear ? { month: 'short', year: '2-digit' } : { month: 'short' })
+        label: cursor.toLocaleDateString('en-US', showYear ? { month: 'short', year: 'numeric' } : { month: 'short' })
       });
     }
     isFirstTick = false;
@@ -3275,10 +3437,8 @@ function renderHeroChart(svg) {
       const i = Math.round((withd - start) / 86400000);
       if (i >= 0 && i < proj.length) markers.push({ i, type: 'withdraw', label: `Withdraw ${o.bankName}`, color: '#10b981' });
     }
-    if (o.offerExpirationDate) {
-      const i = Math.round((parseDate(o.offerExpirationDate) - start) / 86400000);
-      if (i >= 0 && i < proj.length) markers.push({ i, type: 'deadline', label: `Expires ${o.bankName}`, color: '#f59e0b' });
-    }
+    // Offer expiration intentionally NOT shown on the chart — it isn't a
+    // cash-flow event; it lives in the upcoming actions list instead.
   }
   for (const e of App.state.events) {
     if (!e.includeInProjection) continue;
@@ -3345,7 +3505,9 @@ function renderHeroChart(svg) {
 
   svg.innerHTML = svgContent;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.setAttribute('height', String(H));
+  // No explicit height — let CSS width:100% + viewBox aspect ratio drive
+  // the rendered height. Setting a fixed height attribute conflicts with
+  // preserveAspectRatio="xMidYMid meet" and breaks cursor mapping.
 
   // Hover interactions
   const hoverArea = svg.querySelector('#chart-hover-area');
@@ -3912,9 +4074,8 @@ function onInput(e) {
   const el = e.target;
   if (el.dataset.action === 'offers-search') {
     App.filters.offersSearch = el.value;
-    // Debounce by re-rendering on next tick
     clearTimeout(window._searchTimer);
-    window._searchTimer = setTimeout(() => render(), 200);
+    window._searchTimer = setTimeout(() => render(), 120);
   }
 }
 
